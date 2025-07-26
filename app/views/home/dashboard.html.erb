@@ -1,0 +1,105 @@
+<!-- app/views/home/dashboard.html.erb -->
+<div class="dashboard">
+  <div class="row">
+    <div class="col-md-8">
+      <h1>Welcome back, <%= @user.username %>!</h1>
+      
+      <!-- Character Stats Component -->
+      <%= render 'shared/character_stats', user: @user %>
+      
+      <!-- Current Location Info -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Current Location</h3>
+        </div>
+        <div class="card-body">
+          <h4><%= @current_location.name %></h4>
+          <p><%= @current_location.description %></p>
+          <%= link_to "Enter Game", game_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+      
+      <!-- Recent Combat Logs -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Recent Battles</h3>
+        </div>
+        <div class="card-body">
+          <% if @recent_combat_logs.any? %>
+            <% @recent_combat_logs.each do |log| %>
+              <div class="combat-log-entry">
+                <strong><%= log.enemy_name %></strong> - 
+                <span class="result-<%= log.result %>"><%= log.result.capitalize %></span>
+                <small class="text-muted">(<%= time_ago_in_words(log.created_at) %> ago)</small>
+                <% if log.result == 'victory' %>
+                  <div class="rewards">
+                    +<%= log.experience_gained %>XP, +<%= log.gold_gained %> gold
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-muted">No recent battles.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <!-- Active Quests -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Active Quests</h3>
+        </div>
+<div class="card-body">
+         <% if @active_quests.any? %>
+           <% @active_quests.each do |user_quest| %>
+             <div class="quest-entry">
+               <h5><%= link_to user_quest.quest.name, quest_path(user_quest.quest) %></h5>
+               <div class="quest-progress">
+                 <% user_quest.quest.objectives.each do |objective, required| %>
+                   <% current = user_quest.progress[objective] || 0 %>
+                   <div class="progress-bar">
+                     <span><%= objective.humanize %>: <%= current %>/<%= required %></span>
+                     <div class="progress">
+                       <div class="progress-fill" style="width: <%= (current.to_f / required * 100).round(1) %>%"></div>
+                     </div>
+                   </div>
+                 <% end %>
+               </div>
+             </div>
+           <% end %>
+         <% else %>
+           <p class="text-muted">No active quests.</p>
+           <%= link_to "Browse Available Quests", quests_path, class: "btn btn-outline-primary" %>
+         <% end %>
+       </div>
+     </div>
+     
+     <!-- Equipment Summary -->
+     <div class="card mt-4">
+       <div class="card-header">
+         <h3>Equipment</h3>
+       </div>
+       <div class="card-body">
+         <% if @equipped_items.any? %>
+           <% @equipped_items.each do |user_item| %>
+             <div class="equipment-slot">
+               <strong><%= user_item.item.equipment_slot.humanize %>:</strong>
+               <%= user_item.item.name %>
+               <% if user_item.item.weapon? %>
+                 <span class="stat">+<%= user_item.item.attack_power %> ATK</span>
+               <% elsif user_item.item.armor? %>
+                 <span class="stat">+<%= user_item.item.defense_value %> DEF</span>
+               <% end %>
+             </div>
+           <% end %>
+         <% else %>
+           <p class="text-muted">No equipment equipped.</p>
+         <% end %>
+         <%= link_to "Manage Inventory", inventory_index_path, class: "btn btn-outline-secondary btn-sm" %>
+       </div>
+     </div>
+   </div>
+ </div>
+</div>

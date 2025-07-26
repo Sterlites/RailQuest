@@ -1,0 +1,65 @@
+# docker-compose.yml
+# Complete development environment
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: rails_quest_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/rails_quest_development
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/app/node_modules
+    depends_on:
+      - db
+      - redis
+    command: >
+      bash -c "
+        bundle exec rails db:prepare &&
+        bundle exec rails db:seed &&
+        bundle exec rails server -b 0.0.0.0
+      "
+
+  sidekiq:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/rails_quest_development
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: development
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      - db
+      - redis
+    command: bundle exec sidekiq
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache:
+  node_modules:

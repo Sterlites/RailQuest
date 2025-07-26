@@ -1,0 +1,61 @@
+<!-- app/views/shared/_character_stats.html.erb -->
+<!-- Reusable component demonstrating Rails partials -->
+<div class="character-stats card">
+  <div class="card-header">
+    <h3><%= user.username %> - Level <%= user.level %></h3>
+  </div>
+  <div class="card-body">
+    <div class="stats-grid">
+      <!-- Health Bar -->
+      <div class="stat-bar">
+        <label>Health:</label>
+        <div class="progress">
+          <div class="progress-bar bg-danger" 
+               style="width: <%= (user.health.to_f / user.max_health * 100).round(1) %>%">
+            <%= user.health %>/<%= user.max_health %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mana Bar -->
+      <div class="stat-bar">
+        <label>Mana:</label>
+        <div class="progress">
+          <div class="progress-bar bg-primary" 
+               style="width: <%= (user.mana.to_f / user.max_mana * 100).round(1) %>%">
+            <%= user.mana %>/<%= user.max_mana %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Experience Bar -->
+      <div class="stat-bar">
+        <label>Experience:</label>
+        <div class="progress">
+          <% exp_progress = (user.experience % (user.level * 100)).to_f / (user.level * 100) * 100 %>
+          <div class="progress-bar bg-success" style="width: <%= exp_progress.round(1) %>%">
+            <%= user.experience %> XP
+          </div>
+        </div>
+        <small class="text-muted">
+          <%= user.experience_to_next_level %> XP to next level
+        </small>
+      </div>
+      
+      <!-- Combat Stats -->
+      <div class="combat-stats mt-3">
+        <div class="row">
+          <div class="col">
+            <strong>Attack:</strong> <%= user.total_attack_power %>
+          </div>
+          <div class="col">
+            <strong>Defense:</strong> <%= user.total_defense %>
+          </div>
+          <div class="col">
+            <strong>Gold:</strong> <%= number_with_delimiter(user.gold) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

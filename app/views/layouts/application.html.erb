@@ -1,0 +1,65 @@
+<!-- app/views/layouts/application.html.erb -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rails Quest - Adventure RPG</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= stylesheet_link_tag 'application', 'data-turbo-track': 'reload' %>
+    <%= javascript_importmap_tags %>
+    
+    <!-- Modern Rails approach with Stimulus and Turbo -->
+    <meta name="turbo-cache-control" content="no-cache">
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <%= link_to "Rails Quest", root_path, class: "navbar-brand" %>
+        
+        <% if user_signed_in? %>
+          <div class="navbar-nav">
+            <%= link_to "Dashboard", dashboard_path, class: "nav-link" %>
+            <%= link_to "Game", game_path, class: "nav-link" %>
+            <%= link_to "Inventory", inventory_index_path, class: "nav-link" %>
+            <%= link_to "Quests", quests_path, class: "nav-link" %>
+            <%= link_to "Profile", edit_user_registration_path, class: "nav-link" %>
+            <%= link_to "Logout", destroy_user_session_path, method: :delete, class: "nav-link" %>
+          </div>
+        <% else %>
+          <div class="navbar-nav">
+            <%= link_to "Login", new_user_session_path, class: "nav-link" %>
+            <%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %>
+          </div>
+        <% end %>
+      </div>
+    </nav>
+
+    <main class="container">
+      <!-- Flash messages with auto-dismiss -->
+      <% if notice %>
+        <div class="alert alert-success alert-dismissible" data-controller="alert">
+          <%= notice %>
+          <button type="button" class="btn-close" data-action="click->alert#dismiss"></button>
+        </div>
+      <% end %>
+
+      <% if alert %>
+        <div class="alert alert-danger alert-dismissible" data-controller="alert">
+          <%= alert %>
+          <button type="button" class="btn-close" data-action="click->alert#dismiss"></button>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2024 Rails Quest - Built with Ruby on Rails <%= Rails.version %></p>
+      </div>
+    </footer>
+  </body>
+</html>

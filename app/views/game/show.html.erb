@@ -1,0 +1,132 @@
+<!-- app/views/game/show.html.erb -->
+<!-- Main game interface demonstrating complex UI patterns -->
+<div class="game-interface" data-controller="game" data-game-auto-refresh-value="30000">
+  <div class="row">
+    <div class="col-md-8">
+      <!-- Location Display -->
+      <div class="location-panel">
+        <h2><%= @location.name %></h2>
+        <div class="location-description">
+          <%= simple_format(@location.full_description) %>
+        </div>
+        
+        <!-- Movement Controls -->
+        <div class="movement-controls mt-3">
+          <h4>Available Exits:</h4>
+          <div class="movement-buttons">
+            <% @location.available_exits.each do |direction| %>
+              <%= button_to direction.capitalize, 
+                           move_game_path, 
+                           params: { direction: direction },
+                           method: :patch,
+                           class: "btn btn-outline-primary me-2",
+                           data: { 
+                             turbo_method: :patch,
+                             confirm: "Move #{direction}?" 
+                           } %>
+            <% end %>
+          </div>
+        </div>
+        
+        <!-- Location Items -->
+        <% if @location.has_items? %>
+          <div class="location-items mt-4">
+            <h4>Items Here:</h4>
+            <% @location.item_list.each do |item_data| %>
+              <div class="location-item">
+                <span class="item-name"><%= item_data[:item].name %></span>
+                <span class="item-quantity">(<%= item_data[:quantity] %>)</span>
+                <%= button_to "Take", 
+                             take_item_game_path,
+                             params: { item_id: item_data[:item].id },
+                             method: :patch,
+                             class: "btn btn-sm btn-success ms-2" %>
+                <div class="item-description text-muted">
+                  <%= item_data[:item].description %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        
+        <!-- Location Actions -->
+        <div class="location-actions mt-4">
+          <% if @location.safe_zone? %>
+            <%= button_to "Rest", 
+                         rest_game_path, 
+                         method: :patch,
+                         class: "btn btn-info",
+                         data: { 
+                           confirm: "Rest and restore health/mana?" 
+                         } %>
+          <% else %>
+            <%= button_to "Look for Combat", 
+                         combat_game_path, 
+                         method: :patch,
+                         class: "btn btn-warning" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <!-- Character Status Panel -->
+      <%= render 'shared/character_stats', user: @user %>
+      
+      <!-- Quick Inventory -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h4>Quick Inventory</h4>
+        </div>
+        <div class="card-body">
+          <% consumable_items = @inventory_items.select { |ui| ui.item.consumable? }.first(5) %>
+          <% if consumable_items.any? %>
+            <% consumable_items.each do |user_item| %>
+              <div class="inventory-item d-flex justify-content-between align-items-center">
+                <span>
+                  <%= user_item.item.name %> 
+                  <small>(<%= user_item.quantity %>)</small>
+                </span>
+                <%= button_to "Use", 
+                             use_item_game_path,
+                             params: { user_item_id: user_item.id },
+                             method: :patch,
+                             class: "btn btn-sm btn-primary" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-muted">No consumable items.</p>
+          <% end %>
+          <%= link_to "Full Inventory", inventory_index_path, class: "btn btn-outline-secondary btn-sm" %>
+        </div>
+      </div>
+      
+      <!-- Equipment Panel -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h4>Equipment</h4>
+        </div>
+        <div class="card-body">
+          <% equipped_items = @inventory_items.select(&:equipped?).first(3) %>
+          <% if equipped_items.any? %>
+            <% equipped_items.each do |user_item| %>
+              <div class="equipment-item d-flex justify-content-between align-items-center">
+                <span>
+                  <strong><%= user_item.item.equipment_slot.humanize %>:</strong>
+                  <%= user_item.item.name %>
+                </span>
+                <%= button_to "Unequip", 
+                             unequip_item_game_path,
+                             params: { user_item_id: user_item.id },
+                             method: :patch,
+                             class: "btn btn-sm btn-outline-secondary" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-muted">No equipment equipped.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
